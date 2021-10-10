@@ -109,10 +109,16 @@ library SafeMathChainlink {
   }
 }
 import "@openzeppelin/contracts/access/Ownable.sol";
-contract Lottery is Ownable{
+contract Lottery is VRFConsumerBase, Ownable {
+    
+      address payable public recentWinner;
+    uint256 public fee;
+    bytes32 public keyHash;
+    uint256 public randomness;
+    uint256 public usdFee;
+    uint256 public randomResult;
     uint public costToEnter;
     address payable[] public players;
-    uint256 public fee;
     uint nonce;
     AggregatorV3Interface internal ethUsdPriceFeed;
     enum LOTTERY_STATE{
@@ -121,15 +127,25 @@ contract Lottery is Ownable{
         CALCULATING_WINNER
     }
     LOTTERY_STATE public lottery_state;
-    constructor(address _priceFeedAddress) Ownable() public {
-        fee = 50*(10**18);
+    constructor(address _priceFeedAddress,
+    address _vrfCoordinator,
+    address _link,
+    uint256 _fee,
+    bytes32 _keyHash) VRFConsumerBase(
+        _vrfCoordinator, // VRF Coordinator
+        _link  // LINK Token
+        )Ownable(){
+        keyHash =_keyHash ;
+        fee = _fee;
+        keyHash = _keyHash;
+        usdFee=0.1 * 10 ** 18;
         ethUsdPriceFeed = AggregatorV3Interface(_priceFeedAddress);
     lottery_state = LOTTERY_STATE.CLOSED;
     }
     function enter()public payable{
         require(lottery_state == LOTTERY_STATE.OPEN,'lottery is going ON WAIT!');
         require(msg.value>= getEntryFee(),'Amount is less then Fee!!!1');
-        players.push(msg.sender);
+        players.push(payable(msg.sender));
     }
     function getEntryFee()public returns(uint){
         (, int price,,,) = ethUsdPriceFeed.latestRoundData();
@@ -143,6 +159,17 @@ contract Lottery is Ownable{
     }
     function endLottery()public onlyOwner{
 //uint(keccak256(abi.encodePacked(nonce,msg.sender,block.difficulty,block.timestamp))) %players.length;
-    
+    lottery_state = LOTTERY_STATE.CALCULATING_WINNER;
+    bytes32 requestId = requestRandomness(keyHash, fee);
+    }
+    function fulfillRandomness(bytes32 _requestId, uint256 _randomness)internal override{
+        require(lottery_state == LOTTERY_STATE.CALCULATING_WINNER,'you are not there yet');
+    require(_randomness>0,"random-not-found");
+    uint256 indexWinner = _randomness % players.length;
+    recentWinner = players[indexWinner];
+    recentWinner.transfer(address(this).balance);
+    players = new address payable[](0);
+    lottery_state = LOTTERY_STATE.CLOSED;
+    randomness = _randomness;
     }
 }
