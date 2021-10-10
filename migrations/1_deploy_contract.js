@@ -1,6 +1,6 @@
-var Lottery = artifacts.require("lottery");
-module.exports = async function ( deployer) {
- await deployer.deploy(FundMe);
+var Lottery = artifacts.require("Lottery");
+module.exports = async function ( deployer,network) {
+  await deployer.deploy(Lottery);
   const lottery = Lottery.deployed()
   console.log(lottery.address)
 };

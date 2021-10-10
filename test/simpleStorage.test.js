@@ -1,23 +1,23 @@
-const SimpleStorage = artifacts.require("SimpleStorage");
+const Lottery = artifacts.require("Lottery");
 const { assert } = require('chai');
+let { networkConfig } = require('../truffle-config')
+
 const { default: Web3 } = require("web3");
 require('chai')
        .use(require('chai-as-promised'))
        .should()
 
-contract('SimpleStorage', ([deployer, investor]) => {
-       let name, age, simpleStorage,account
+contract('Lottery', ([deployer, investor,network]) => {
+       let account,Usdfee,chainId
  before(async()=>{
-              simpleStorage = await SimpleStorage.new()        
+       // chainId= await web3.eth.net.getId()
+//accounts = chainId == 5777 ? (await web4.eth.getAccounts())[0] :'0x216309F3B914D30DA84e2a22d554665cf820199f'
+        lottery = await Lottery.deployed()
        })
        describe("Initializtion", async () => {
-              it('contract has a name', async () => {
-                     name = await simpleStorage.name();
-                     assert.equal(name, 'Muzammil')
-              })
-              it('contract has a name', async () => {
-                     age = await simpleStorage.Age();
-                     assert.equal(age, 20)
+              it('contract has right fee', async () => {
+                     assert.equal(lottery.getEntryFee() > web3.utils.toWei('0.018', "ether"))
+                     assert.equal(lottery.getEntryFee() < web3.utils.toWei('0.022',"ether"))
               })
        })
 })

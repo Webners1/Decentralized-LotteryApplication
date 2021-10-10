@@ -82,6 +82,7 @@ module.exports = {
       network_id: 4,
       gas: 4500000,
       gasPrice: 10000000000,
+      eth_usd_price_feed:'0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46'
     } // Gas limit used for deploys
     
   },
