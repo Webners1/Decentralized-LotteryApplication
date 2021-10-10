@@ -8,16 +8,23 @@ require('chai')
        .should()
 
 contract('Lottery', ([deployer, investor,network]) => {
-       let account,Usdfee,chainId
+       let lottery,account,Usdfee,chainId
  before(async()=>{
        // chainId= await web3.eth.net.getId()
 //accounts = chainId == 5777 ? (await web4.eth.getAccounts())[0] :'0x216309F3B914D30DA84e2a22d554665cf820199f'
-        lottery = await Lottery.deployed()
+        lottery = await Lottery.new("0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46")
+        Usdfee = await lottery.getEntryFee()
+      
        })
        describe("Initializtion", async () => {
               it('contract has right fee', async () => {
-                     assert.equal(lottery.getEntryFee() > web3.utils.toWei('0.018', "ether"))
-                     assert.equal(lottery.getEntryFee() < web3.utils.toWei('0.022',"ether"))
+                     assert.equal(Usdfee> web3.utils.toWei('0.018', "ether"))
+                     assert.equal(Usdfee < web3.utils.toWei('0.022',"ether"))
               })
        })
 })
+
+
+
+
+
